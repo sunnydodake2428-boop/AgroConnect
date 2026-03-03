@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Register — AgroConnect{% endblock %}
+{% block content %}
+
+<section class="watermark-section watermark-strong" style="
+    background: #f9f6f0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 80px 0;
+">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+
+                <!-- Logo on top -->
+                <div class="text-center mb-4">
+                    <img src="/static/images/logo.png"
+                         alt="AgroConnect"
+                         style="width:64px; height:64px; object-fit:contain; border-radius:14px; margin-bottom:16px;"
+                         onerror="this.style.display='none'">
+                    <div style="font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:900; color:#0a1f12; letter-spacing:-0.04em;">
+                        Agro<span style="color:#4aad6f;">Connect</span>
+                    </div>
+                    <p style="color:#6b8f76; font-size:0.85rem; margin-top:4px;">
+                        Join thousands of farmers earning more
+                    </p>
+                </div>
+
+                <div class="form-container" style="margin:0;">
+                    <h2 class="form-title">Create Account</h2>
+                    <p class="form-subtitle">Start selling directly. Zero commission.</p>
+
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="name" class="form-control"
+                                   placeholder="e.g. Ramesh Patil" required autofocus>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" name="email" class="form-control"
+                                   placeholder="you@example.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" name="phone" class="form-control"
+                                   placeholder="e.g. 9876543210">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" class="form-control"
+                                   placeholder="e.g. Nashik, Maharashtra">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">I am a</label>
+                            <select name="role" class="form-control" required>
+                                <option value="">Select your role</option>
+                                <option value="farmer">🌾 Farmer — I grow and sell crops</option>
+                                <option value="buyer">🛒 Buyer — I want to buy directly</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control"
+                                   placeholder="Create a strong password" required>
+                        </div>
+                        <button type="submit" class="btn-form">
+                            Create My Account →
+                        </button>
+                    </form>
+
+                    <div style="text-align:center; margin-top:24px; padding-top:24px; border-top:1px solid #ede8dd;">
+                        <p style="color:#6b8f76; font-size:0.875rem; margin:0;">
+                            Already have an account?
+                            <a href="/login" style="color:#2d7a4f; font-weight:700; text-decoration:none;">
+                                Sign In →
+                            </a>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% block title %}Marketplace — AgroConnect{% endblock %}
+{% block content %}
+
+<!-- HERO SEARCH SECTION -->
+<div style="background:linear-gradient(135deg, var(--green-dark), var(--green-mid)); padding:60px 0 40px; color:white;">
+    <div class="container text-center">
+        <h2 style="font-family:'Playfair Display',serif; font-size:2.5rem; margin-bottom:8px;">Fresh Crop Marketplace</h2>
+        <p style="color:rgba(255,255,255,0.7); margin-bottom:30px;">Buy directly from verified farmers across India</p>
+
+        <!-- SEARCH BAR WITH VOICE -->
+        <form method="GET" action="/marketplace" id="searchForm">
+            <div class="search-bar" style="max-width:650px; margin:0 auto;">
+                <input type="text"
+                       name="search"
+                       id="searchInput"
+                       value="{{ search }}"
+                       placeholder="Search crops... or speak in Marathi/Hindi">
+                <button type="button"
+                        id="voiceBtn"
+                        onclick="startVoiceSearch()"
+                        style="background:#e8f5e9; color:var(--green-mid); border:none; padding:10px 16px; border-radius:50px; margin-right:4px; cursor:pointer; font-size:1.1rem; flex-shrink:0;">
+                    🎤
+                </button>
+                <button type="submit">Search</button>
+            </div>
+            <div id="voiceStatus" style="color:rgba(255,255,255,0.7); font-size:0.85rem; margin-top:10px; min-height:20px;"></div>
+        </form>
+    </div>
+</div>
+
+<div class="container section">
+
+    <!-- FILTERS ROW -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <p style="color:var(--text-light); font-size:0.9rem; margin:0;">
+                <strong>{{ products|length }}</strong> crop{{ 's' if products|length != 1 else '' }} available
+                {% if search %} matching "{{ search }}"{% endif %}
+            </p>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="/marketplace" class="badge-category text-decoration-none" style="padding:8px 16px;">All</a>
+<a href="/marketplace?category=vegetables" class="badge-category text-decoration-none" style="padding:8px 16px;">Vegetables</a>
+<a href="/marketplace?category=fruits" class="badge-category text-decoration-none" style="padding:8px 16px;">Fruits</a>
+<a href="/marketplace?category=grains" class="badge-category text-decoration-none" style="padding:8px 16px;">Grains</a>
+<a href="/marketplace?category=flowers" class="badge-category text-decoration-none" style="padding:8px 16px;"> Flowers</a>
+<a href="/marketplace?category=dairy" class="badge-category text-decoration-none" style="padding:8px 16px;">Dairy</a>
+<a href="/marketplace?category=spices" class="badge-category text-decoration-none" style="padding:8px 16px;">Spices</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCTS GRID -->
+    {% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="product-card">
+
+                <!-- PRODUCT IMAGE -->
+                <img src="/static/images/{{ product.image }}"
+                     alt="{{ product.crop_name }}"
+                     onerror="this.src='https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400'">
+
+                <div class="card-body">
+
+                    <!-- CATEGORY BADGE -->
+                    <span class="badge-category">{{ product.category or 'Produce' }}</span>
+
+                    <!-- CROP NAME -->
+                    <h5 style="margin-top:10px; font-size:1.05rem; color:var(--green-dark);">
+                        {{ product.crop_name }}
+                    </h5>
+
+                    <!-- PRICE -->
+                    <div class="product-price">Rs. {{ product.price }}/{{ product.unit }}</div>
+
+                    <!-- FARMER INFO -->
+                    <div class="product-farmer mt-1">
+                        <i class="fas fa-user-circle me-1"></i>{{ product.farmer.name }}
+                    </div>
+                    <div class="product-farmer">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ product.farmer.location }}
+                    </div>
+
+                    <!-- RATING -->
+                    <div class="product-farmer mt-1">
+                        <i class="fas fa-star me-1" style="color:#ffc107;"></i>
+                        Verified Farmer
+                    </div>
+
+                    <!-- QUANTITY -->
+                    <div class="product-farmer mb-2">
+                        <i class="fas fa-box me-1"></i>{{ product.quantity }} {{ product.unit }} available
+                    </div>
+
+                    <!-- MIDDLEMAN BADGE -->
+                    <div style="background:#e8f5e9; border-radius:8px; padding:7px 10px; margin-bottom:10px; font-size:0.75rem; color:var(--green-mid); font-weight:600; border-left:3px solid var(--green-mid);">
+                        Mandi: Rs.{{ (product.price * 0.4)|round|int }}/kg —
+                        Save Rs.{{ (product.price * 0.6)|round|int }}/kg here
+                    </div>
+
+                    <!-- ADD TO CART OR LOGIN -->
+                    {% if session.user_role == 'buyer' %}
+                    <form method="POST" action="/add-to-cart/{{ product.product_id }}">
+                        <div class="d-flex gap-2">
+                            <input type="number"
+                                   name="quantity"
+                                   value="1"
+                                   min="1"
+                                   max="{{ product.quantity }}"
+                                   class="form-control"
+                                   style="width:70px; padding:8px; font-size:0.9rem;">
+                            <button type="submit"
+                                    class="btn-form"
+                                    style="flex:1; padding:8px; font-size:0.85rem;">
+                                Add to Cart
+                            </button>
+                        </div>
+                    </form>
+
+                    {% elif session.user_role == 'farmer' %}
+                    <div style="background:#fff3e0; border-radius:8px; padding:8px; text-align:center; font-size:0.8rem; color:#e65100;">
+                        Login as buyer to purchase
+                    </div>
+
+                    {% else %}
+                    <a href="/login"
+                       class="btn-form mt-2 d-block text-center text-decoration-none"
+                       style="padding:10px; font-size:0.85rem;">
+                        Login to Buy
+                    </a>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- EMPTY STATE -->
+    <div class="text-center py-5">
+        <i class="fas fa-search fa-3x mb-3" style="color:var(--green-light);"></i>
+        <h5 style="color:var(--text-light);">No crops found</h5>
+        <p style="color:var(--text-light); font-size:0.9rem;">
+            Try a different search term or browse all categories
+        </p>
+        <a href="/marketplace" class="btn-primary-custom mt-3">Browse All Crops</a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% block scripts %}
+<script>
+const CROP_TRANSLATIONS = {
+    'टोमॅटो': 'tomato', 'टमाटर': 'tomato',
+    'बटाटा': 'potato', 'आलू': 'potato',
+    'कांदा': 'onion', 'प्याज': 'onion',
+    'आंबा': 'mango', 'आम': 'mango',
+    'गहू': 'wheat', 'गेहूं': 'wheat',
+    'तांदूळ': 'rice', 'चावल': 'rice',
+    'कोबी': 'cabbage', 'पत्तागोभी': 'cabbage',
+    'फ्लॉवर': 'cauliflower', 'फूलगोभी': 'cauliflower',
+    'वांगी': 'brinjal', 'बैंगन': 'brinjal',
+    'गाजर': 'carrot', 'भेंडी': 'okra',
+    'मिरची': 'chilli', 'मिर्च': 'chilli',
+    'पालक': 'spinach', 'केळी': 'banana',
+    'केला': 'banana', 'द्राक्षे': 'grapes',
+    'अंगूर': 'grapes', 'संत्रा': 'orange',
+    'पपई': 'papaya', 'पपीता': 'papaya'
+};
+
+function startVoiceSearch() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert('Voice search not supported. Please use Chrome browser.');
+        return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'mr-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+
+    voiceBtn.style.background = '#ffebee';
+    voiceBtn.innerHTML = '🔴';
+    voiceStatus.textContent = 'Listening... Speak crop name in Marathi or Hindi';
+
+    recognition.onresult = function(event) {
+        let spoken = '';
+        for (let i = 0; i < event.results[0].length; i++) {
+            spoken = event.results[0][i].transcript.trim();
+            if (spoken) break;
+        }
+
+        voiceStatus.textContent = 'You said: "' + spoken + '"';
+        let searchTerm = spoken.toLowerCase();
+
+        for (const [local, english] of Object.entries(CROP_TRANSLATIONS)) {
+            if (spoken.includes(local)) {
+                searchTerm = english;
+                voiceStatus.textContent = 'Recognized: ' + local + ' → Searching for ' + english;
+                break;
+            }
+        }
+
+        document.getElementById('searchInput').value = searchTerm;
+        setTimeout(function() {
+            document.getElementById('searchForm').submit();
+        }, 800);
+    };
+
+    recognition.onerror = function() {
+        voiceStatus.textContent = 'Not recognized. Please try again.';
+        voiceBtn.style.background = '#e8f5e9';
+        voiceBtn.innerHTML = '🎤';
+    };
+
+    recognition.onend = function() {
+        voiceBtn.style.background = '#e8f5e9';
+        voiceBtn.innerHTML = '🎤';
+    };
+
+    recognition.start();
+}
+</script>
+{% endblock %}
+
+{% endblock %}

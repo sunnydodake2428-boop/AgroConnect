@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Add Crop Listing — AgroConnect{% endblock %}
+{% block content %}
+
+<div class="container">
+    <div class="form-container" style="max-width:560px;">
+        <h2 class="form-title">List a New Crop</h2>
+        <p class="form-subtitle">Add your fresh produce to the marketplace</p>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label">Crop Name</label>
+                <input type="text" name="crop_name" class="form-control" placeholder="e.g. Fresh Tomatoes" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Category</label>
+               <select name="category" class="form-control" required>
+    <option value="">Select category</option>
+    <option value="vegetables">Vegetables</option>
+    <option value="fruits">Fruits</option>
+    <option value="grains">Grains</option>
+    <option value="flowers">Flowers</option>
+    <option value="dairy">Dairy</option>
+    <option value="spices">Spices</option>
+    <option value="other">Other</option>
+</select>
+            </div>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label class="form-label">Quantity Available</label>
+                    <input type="number" name="quantity" class="form-control" placeholder="e.g. 200" required>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="form-label">Unit</label>
+                    <select name="unit" class="form-control" required>
+                        <option value="kg">kg</option>
+                        <option value="quintal">quintal</option>
+                        <option value="dozen">dozen</option>
+                        <option value="litre">litre</option>
+                        <option value="piece">piece</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Price per Unit (Rs.)</label>
+                <input type="number" name="price" class="form-control" placeholder="e.g. 25" step="0.01" required>
+                <small style="color:var(--text-light); font-size:0.82rem;">
+                    Not sure? <a href="/price-predictor" style="color:var(--green-mid);">Check Price Predictor</a>
+                </small>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"
+                          placeholder="Describe your produce — freshness, harvest date, growing method..."></textarea>
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Crop Photo</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+            <button type="submit" class="btn-form">Publish Listing</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

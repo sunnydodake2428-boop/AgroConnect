@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}My Cart — AgroConnect{% endblock %}
+{% block content %}
+<div class="container section">
+    <h2 style="font-family:'Playfair Display',serif; color:var(--green-dark); margin-bottom:30px;">Your Cart</h2>
+
+    {% if cart_items %}
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="table-container">
+                {% for item in cart_items %}
+                <div class="d-flex align-items-center gap-3 py-3" style="border-bottom:1px solid #f0f0f0;">
+                    <img src="/static/images/{{ item.image }}"
+                         style="width:70px; height:70px; object-fit:cover; border-radius:12px;"
+                         onerror="this.src='https://images.unsplash.com/photo-1540420773420-3366772f4999?w=200'">
+                    <div style="flex:1;">
+                        <h6 style="color:var(--green-dark); margin:0;">{{ item.crop_name }}</h6>
+                        <small style="color:var(--text-light);">by {{ item.farmer_name }}</small>
+                        <div style="color:var(--green-mid); font-weight:600; margin-top:4px;">
+                           Rs. {{ item.product.price * item.quantity }}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.85rem; color:var(--text-light);">Qty: {{ item.quantity }}</div>
+                        <div style="font-weight:700; color:var(--green-dark);">
+                            Rs. {{ item.product.price * item.quantity }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="table-container">
+                <h5 class="table-title">Order Summary</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="color:var(--text-light);">Subtotal</span>
+                    <strong>Rs. {{ total }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span style="color:var(--text-light);">Platform Fee</span>
+                    <strong style="color:var(--green-mid);">Free</strong>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-4">
+                    <strong>Total</strong>
+                    <strong style="font-size:1.2rem; color:var(--green-dark);">Rs. {{ total }}</strong>
+                </div>
+                <form method="POST" action="/place-order">
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Address</label>
+                        <textarea name="delivery_address" class="form-control" rows="3"
+                                  placeholder="Enter your complete delivery address" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-form">Place Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-3x mb-3" style="color:var(--green-light);"></i>
+        <h5 style="color:var(--text-light);">Your cart is empty</h5>
+        <a href="/marketplace" class="btn-primary-custom mt-3">Browse Marketplace</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

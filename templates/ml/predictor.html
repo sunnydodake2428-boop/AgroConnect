@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% block title %}Smart Crop Predictor — AgroConnect{% endblock %}
+{% block content %}
+
+<div style="background:linear-gradient(135deg, var(--green-dark), var(--green-mid)); padding:60px 0 40px; color:white;">
+    <div class="container text-center">
+        <h2 style="font-family:'Playfair Display',serif; font-size:2.5rem;">Smart Crop Predictor</h2>
+        <p style="color:rgba(255,255,255,0.7); margin-top:8px;">
+            Upload a photo of your crop — AI identifies it and predicts the fair market price instantly
+        </p>
+    </div>
+</div>
+
+<div class="container section">
+
+    <!-- REAL TIME WEATHER WIDGET -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div id="weatherWidget" style="background:linear-gradient(135deg, #1565C0, #1976D2); border-radius:16px; padding:24px; color:white;">
+
+                <!-- Loading State -->
+                <div id="weatherLoading" style="text-align:center; padding:20px;">
+                    <div style="font-size:0.9rem; opacity:0.8;">
+                        <i class="fas fa-location-arrow me-2"></i>
+                        Detecting your location for accurate weather...
+                    </div>
+                </div>
+
+                <!-- Weather Content -->
+                <div id="weatherContent" style="display:none;">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:4px;">
+                                Live Weather — <span id="weatherCity">--</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <img id="weatherIcon" src="" style="width:60px; height:60px;">
+                                <div>
+                                    <div style="font-size:3rem; font-family:'Playfair Display',serif; line-height:1;">
+                                        <span id="weatherTemp">--</span>°C
+                                    </div>
+                                    <div style="opacity:0.8; font-size:0.9rem;" id="weatherDesc">--</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-4 mt-3">
+                                <div>
+                                    <div style="font-size:0.75rem; opacity:0.6;">HUMIDITY</div>
+                                    <div style="font-weight:600;"><span id="weatherHumidity">--</span>%</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.75rem; opacity:0.6;">WIND</div>
+                                    <div style="font-weight:600;"><span id="weatherWind">--</span> m/s</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.75rem; opacity:0.6;">FEELS LIKE</div>
+                                    <div style="font-weight:600;"><span id="weatherFeels">--</span>°C</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:12px;">
+                                Farming Advisory
+                            </div>
+                            <div id="weatherAdvisory"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error State -->
+                <div id="weatherError" style="display:none; text-align:center; padding:10px;">
+                    <div style="font-size:0.85rem; opacity:0.8;">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Could not detect location.
+                        <button onclick="getLocation()"
+                                style="background:rgba(255,255,255,0.2); border:none; color:white; padding:4px 12px; border-radius:20px; cursor:pointer; margin-left:8px; font-size:0.82rem;">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!-- PREDICTION FORM -->
+        <div class="col-lg-6">
+            <div class="table-container">
+                <h5 class="table-title">AI Crop Price Predictor</h5>
+
+                <form method="POST" enctype="multipart/form-data" id="predictorForm">
+
+                    <!-- IMAGE UPLOAD SECTION -->
+                    <div class="mb-4">
+                        <label class="form-label">Step 1 — Upload or Capture Crop Photo</label>
+                        <div style="border:2px dashed #c8e6c9; border-radius:12px; padding:24px; text-align:center; background:#f9fff9;"
+                             onclick="document.getElementById('cropImageInput').click()"
+                             id="dropZone">
+
+                            <div id="previewContainer" style="display:none; margin-bottom:12px;">
+                                <img id="imagePreview" style="max-height:220px; border-radius:8px; max-width:100%; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                                <div style="margin-top:10px; font-size:0.82rem; color:var(--green-mid); font-weight:600;">
+                                    Photo ready — AI will analyze this image
+                                </div>
+                            </div>
+
+                            <div id="uploadPrompt">
+                                <i class="fas fa-camera fa-3x mb-3" style="color:var(--green-light);"></i>
+                                <p style="color:var(--green-mid); font-weight:600; margin:8px 0 4px; font-size:1rem;">
+                                    Click here to upload crop photo
+                                </p>
+                                <p style="color:var(--text-light); font-size:0.82rem; margin:0;">
+                                    JPG, PNG supported — AI will identify the crop automatically
+                                </p>
+                            </div>
+
+                            <input type="file"
+                                   id="cropImageInput"
+                                   name="crop_image"
+                                   accept="image/*"
+                                   style="display:none;"
+                                   onchange="previewImage(this)"
+                                   required>
+                        </div>
+
+                        <!-- Camera and Upload Buttons -->
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="button"
+                                    onclick="openCamera()"
+                                    style="flex:1; background:#e8f5e9; color:var(--green-mid); border:2px solid var(--green-light); border-radius:8px; padding:12px; font-weight:600; font-size:0.88rem; cursor:pointer;">
+                                <i class="fas fa-camera me-2"></i>Take Live Photo
+                            </button>
+                            <button type="button"
+                                    onclick="document.getElementById('cropImageInput').click()"
+                                    style="flex:1; background:#e3f2fd; color:#1565c0; border:2px solid #90caf9; border-radius:8px; padding:12px; font-weight:600; font-size:0.88rem; cursor:pointer;">
+                                <i class="fas fa-image me-2"></i>Upload from Gallery
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LIVE CAMERA SECTION -->
+                    <div id="cameraSection" style="display:none; margin-bottom:16px;">
+                        <div style="border-radius:12px; overflow:hidden; background:#000;">
+                            <video id="cameraFeed" autoplay playsinline
+                                   style="width:100%; max-height:260px; object-fit:cover;"></video>
+                        </div>
+                        <canvas id="cameraCanvas" style="display:none;"></canvas>
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" onclick="capturePhoto()"
+                                    style="flex:1; background:var(--green-mid); color:white; border:none; border-radius:8px; padding:14px; font-weight:600; cursor:pointer; font-size:0.95rem;">
+                                <i class="fas fa-circle me-2"></i>Capture Photo
+                            </button>
+                            <button type="button" onclick="closeCamera()"
+                                    style="flex:1; background:#ffebee; color:#c62828; border:none; border-radius:8px; padding:14px; font-weight:600; cursor:pointer; font-size:0.95rem;">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI DETECTION RESULT -->
+                    {% if detected_crop %}
+                    <div style="background:linear-gradient(135deg, #e8f5e9, #f1f8e9); border-radius:12px; padding:16px; margin-bottom:20px; border-left:5px solid var(--green-mid);">
+                        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-light); margin-bottom:6px;">
+                            AI Vision Detection Result
+                        </div>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <i class="fas fa-check-circle" style="color:var(--green-mid); font-size:1.4rem;"></i>
+                            <div>
+                                <div style="font-size:1.5rem; font-weight:700; color:var(--green-dark);">
+                                    {{ detected_crop.title() }}
+                                </div>
+                                <div style="font-size:0.82rem; color:var(--text-light); margin-top:2px;">
+                                    Identified automatically from your photo
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- ERROR MESSAGE -->
+                    {% if error_message %}
+                    <div style="background:#ffebee; border-radius:10px; padding:14px 16px; margin-bottom:16px; border-left:4px solid #c62828;">
+                        <div style="color:#c62828; font-size:0.88rem; font-weight:600;">
+                            <i class="fas fa-exclamation-circle me-2"></i>{{ error_message }}
+                        </div>
+                        <div style="color:#b71c1c; font-size:0.82rem; margin-top:6px;">
+                            Tip: Make sure the crop is clearly visible and well-lit in the photo.
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Step 2 — Select Current Season</label>
+                        <select name="season" class="form-control" required>
+                            <option value="">Select season</option>
+                            <option value="summer">Summer (March — June)</option>
+                            <option value="monsoon">Monsoon (July — September)</option>
+                            <option value="winter">Winter (October — February)</option>
+                            <option value="spring">Spring</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Step 3 — Enter Quantity (kg)</label>
+                        <input type="number" name="quantity" class="form-control"
+                               placeholder="e.g. 100" min="1" required>
+                    </div>
+
+                    <button type="submit" class="btn-form" style="font-size:1rem; padding:16px;">
+                        <i class="fas fa-brain me-2"></i>Analyze Photo and Predict Price
+                    </button>
+
+                    <div style="text-align:center; margin-top:12px; font-size:0.8rem; color:var(--text-light);">
+                        AgroConnect AI Prediction
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- PREDICTION RESULT -->
+        <div class="col-lg-6 mt-4 mt-lg-0">
+            {% if prediction %}
+            <div class="table-container" style="border-left:5px solid var(--green-light);">
+                <h5 class="table-title">Prediction Result</h5>
+
+                {% if prediction.ai_detected %}
+                <div style="background:linear-gradient(135deg, #e8f5e9, #f1f8e9); border-radius:8px; padding:10px 14px; margin-bottom:12px; font-size:0.85rem; color:var(--green-mid); display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-robot"></i>
+                    <span><strong>AI Vision</strong> identified this crop from your photo</span>
+                </div>
+                {% endif %}
+
+                {% if prediction.weather_adjusted %}
+                <div style="background:#e3f2fd; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:0.85rem; color:#1565c0; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-cloud-sun"></i>
+                    <span>Price adjusted based on live weather conditions</span>
+                </div>
+                {% endif %}
+
+                <div class="text-center py-2">
+                    <div style="font-size:0.78rem; color:var(--text-light); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;">
+                        Detected Crop
+                    </div>
+                    <div style="font-size:1.8rem; font-weight:700; color:var(--green-dark); margin-bottom:20px;">
+                        {{ prediction.crop }}
+                    </div>
+
+                    <div style="font-size:0.85rem; color:var(--text-light); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">
+                        Recommended Price Per Kg
+                    </div>
+                    <div style="font-family:'Playfair Display',serif; font-size:4.5rem; color:var(--green-mid); line-height:1; font-weight:700;">
+                        Rs.{{ prediction.price }}
+                    </div>
+                    <div style="color:var(--text-light); font-size:0.9rem; margin-top:4px; margin-bottom:24px;">per kilogram</div>
+
+                    <!-- Price Range -->
+                    <div style="background:#fafafa; border-radius:12px; padding:20px; margin-bottom:20px; border:1px solid #f0f0f0;">
+                        <div style="font-size:0.78rem; color:var(--text-light); margin-bottom:14px; text-transform:uppercase; letter-spacing:0.5px;">
+                            Competitive Price Range
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#e53935;">Rs.{{ prediction.min_price }}</div>
+                                <div style="font-size:0.72rem; color:var(--text-light); margin-top:2px;">Minimum</div>
+                            </div>
+                            <div style="flex:1; height:2px; background:linear-gradient(to right, #e53935, var(--green-mid)); margin:0 12px; border-radius:2px;"></div>
+                            <div style="text-align:center;">
+                                <div style="font-size:1.8rem; font-weight:700; color:var(--green-mid);">Rs.{{ prediction.price }}</div>
+                                <div style="font-size:0.72rem; color:var(--text-light); margin-top:2px;">Best Price</div>
+                            </div>
+                            <div style="flex:1; height:2px; background:linear-gradient(to right, var(--green-mid), #2e7d32); margin:0 12px; border-radius:2px;"></div>
+                            <div style="text-align:center;">
+                                <div style="font-size:1.3rem; font-weight:700; color:#2e7d32;">Rs.{{ prediction.max_price }}</div>
+                                <div style="font-size:0.72rem; color:var(--text-light); margin-top:2px;">Maximum</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div style="background:#e8f5e9; border-radius:12px; padding:16px;">
+                                <div style="font-size:1.7rem; font-weight:700; color:var(--green-dark);">Rs.{{ prediction.total }}</div>
+                                <div style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Total for {{ prediction.quantity|int }} kg</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div style="background:#fff3e0; border-radius:12px; padding:16px;">
+                                <div style="font-size:1.4rem; font-weight:700; color:#e65100;">{{ prediction.season }}</div>
+                                <div style="font-size:0.75rem; color:var(--text-light); margin-top:4px;">Season Factor Applied</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation -->
+                    <div style="background:linear-gradient(135deg, #e8f5e9, #f1f8e9); border-radius:12px; padding:18px; text-align:left; border-left:4px solid var(--green-mid);">
+                        <div style="font-size:0.82rem; font-weight:700; color:var(--green-dark); margin-bottom:8px; text-transform:uppercase;">
+                            Our Recommendation
+                        </div>
+                        <p style="color:var(--green-mid); font-size:0.9rem; margin:0; line-height:1.6;">
+                            List your <strong>{{ prediction.crop }}</strong> between
+                            <strong>Rs.{{ prediction.min_price }}</strong> and
+                            <strong>Rs.{{ prediction.max_price }}</strong> per kg
+                            this <strong>{{ prediction.season }}</strong> season.
+                            {% if prediction.weather_adjusted %}
+                            Live weather in your area has been factored in.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if session.user_role == 'farmer' %}
+                    <a href="/farmer/add-listing"
+                       class="btn-form mt-4 d-block text-decoration-none text-center"
+                       style="padding:16px; font-size:1rem;">
+                        List {{ prediction.crop }} Now at This Price
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% else %}
+            <div class="table-container text-center py-4">
+                <i class="fas fa-robot fa-4x mb-4" style="color:var(--green-light);"></i>
+                <h5 style="color:var(--green-dark); margin-bottom:6px;">How AI Detection Works</h5>
+                <p style="color:var(--text-light); font-size:0.88rem; margin-bottom:28px;">
+                    No manual selection needed — just upload a photo
+                </p>
+                <div style="text-align:left; max-width:320px; margin:0 auto;">
+                    <div class="d-flex gap-3 mb-4">
+                        <div style="background:var(--green-mid); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">1</div>
+                        <div>
+                            <div style="font-weight:600; color:var(--green-dark); font-size:0.9rem;">Take or Upload Photo</div>
+                            <div style="color:var(--text-light); font-size:0.82rem; margin-top:2px;">Use camera or upload from gallery</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 mb-4">
+                        <div style="background:var(--green-mid); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">2</div>
+                        <div>
+                            <div style="font-weight:600; color:var(--green-dark); font-size:0.9rem;">AI Analyzes Your Crop</div>
+                            <div style="color:var(--text-light); font-size:0.82rem; margin-top:2px;">Identifies crop from image automatically</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 mb-4">
+                        <div style="background:var(--green-mid); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">3</div>
+                        <div>
+                            <div style="font-weight:600; color:var(--green-dark); font-size:0.9rem;">Select Season and Quantity</div>
+                            <div style="color:var(--text-light); font-size:0.82rem; margin-top:2px;">Only two inputs needed from you</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <div style="background:var(--amber); color:var(--green-dark); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:700; flex-shrink:0;">4</div>
+                        <div>
+                            <div style="font-weight:600; color:var(--green-dark); font-size:0.9rem;">Get Fair Price Instantly</div>
+                            <div style="color:var(--text-light); font-size:0.82rem; margin-top:2px;">Adjusted for season and live weather</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="background:#f5f5f5; border-radius:10px; padding:14px; margin-top:28px; font-size:0.82rem; color:var(--text-light);">
+                    <i class="fas fa-lightbulb me-2" style="color:var(--amber);"></i>
+                    Use a clear, well-lit photo with crop as the main subject
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+/* ===== IMAGE PREVIEW ===== */
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('previewContainer').style.display = 'block';
+            document.getElementById('uploadPrompt').style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+/* ===== CAMERA ===== */
+let stream = null;
+
+function openCamera() {
+    document.getElementById('cameraSection').style.display = 'block';
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    })
+    .then(function(s) {
+        stream = s;
+        document.getElementById('cameraFeed').srcObject = stream;
+    })
+    .catch(function() {
+        alert('Camera not available. Please use Upload option.');
+        document.getElementById('cameraSection').style.display = 'none';
+    });
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraFeed');
+    const canvas = document.getElementById('cameraCanvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], 'crop_photo.jpg', { type: 'image/jpeg' });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('cropImageInput').files = dt.files;
+        document.getElementById('imagePreview').src = canvas.toDataURL('image/jpeg');
+        document.getElementById('previewContainer').style.display = 'block';
+        document.getElementById('uploadPrompt').style.display = 'none';
+        closeCamera();
+    }, 'image/jpeg', 0.9);
+}
+
+function closeCamera() {
+    if (stream) {
+        stream.getTracks().forEach(function(t) { t.stop(); });
+        stream = null;
+    }
+    document.getElementById('cameraSection').style.display = 'none';
+}
+
+/* ===== REAL TIME WEATHER ===== */
+function getLocation() {
+    document.getElementById('weatherLoading').style.display = 'block';
+    document.getElementById('weatherContent').style.display = 'none';
+    document.getElementById('weatherError').style.display = 'none';
+
+    if (!navigator.geolocation) {
+        document.getElementById('weatherLoading').style.display = 'none';
+        document.getElementById('weatherError').style.display = 'block';
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            fetchWeather(position.coords.latitude, position.coords.longitude);
+        },
+        function() {
+            document.getElementById('weatherLoading').style.display = 'none';
+            document.getElementById('weatherError').style.display = 'block';
+        },
+        { timeout: 10000, maximumAge: 300000 }
+    );
+}
+
+function fetchWeather(lat, lon) {
+    fetch('/get-weather-by-coords?lat=' + lat + '&lon=' + lon)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success) throw new Error();
+
+            var w = data.weather;
+            document.getElementById('weatherCity').textContent = w.city;
+            document.getElementById('weatherTemp').textContent = w.temp;
+            document.getElementById('weatherDesc').textContent = w.description;
+            document.getElementById('weatherHumidity').textContent = w.humidity;
+            document.getElementById('weatherWind').textContent = w.wind;
+            document.getElementById('weatherFeels').textContent = w.feels_like;
+            document.getElementById('weatherIcon').src =
+                'https://openweathermap.org/img/wn/' + w.icon + '@2x.png';
+
+            var html = '';
+            w.advisory.forEach(function(advice) {
+                html += '<div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:0.88rem;border-left:3px solid #64B5F6;">' + advice + '</div>';
+            });
+            document.getElementById('weatherAdvisory').innerHTML = html;
+
+            document.getElementById('weatherLoading').style.display = 'none';
+            document.getElementById('weatherContent').style.display = 'block';
+        })
+        .catch(function() {
+            document.getElementById('weatherLoading').style.display = 'none';
+            document.getElementById('weatherError').style.display = 'block';
+        });
+}
+
+/* AUTO LOAD WEATHER ON PAGE OPEN */
+window.addEventListener('load', function() {
+    getLocation();
+});
+
+</script>
+{% endblock %}

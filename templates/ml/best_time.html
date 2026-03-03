@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% block title %}Best Time to Sell — AgroConnect{% endblock %}
+{% block content %}
+
+<!-- Dark hero header -->
+<div style="background:linear-gradient(135deg, #0a1f12, #1e5c35); padding:60px 0 40px; color:white; position:relative; overflow:hidden;">
+    <div style="position:absolute; top:-30%; right:-5%; width:50%; height:160%; background:radial-gradient(ellipse, rgba(74,173,111,0.1) 0%, transparent 65%); pointer-events:none;"></div>
+    <div class="container text-center position-relative" style="z-index:1;">
+        <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(74,173,111,0.12); border:1px solid rgba(74,173,111,0.2); color:#c8f0d8; padding:6px 18px; border-radius:100px; font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:20px;">
+            📊 Farmer Intelligence
+        </div>
+        <h2 style="font-family:'Playfair Display',serif; font-size:clamp(2rem,4vw,3rem); font-weight:900; letter-spacing:-0.03em; margin-bottom:10px;">Best Time to Sell</h2>
+        <p style="color:rgba(255,255,255,0.5); margin:0; font-size:1rem; font-weight:300;">Know exactly when to sell your crop for maximum profit</p>
+    </div>
+</div>
+
+<!-- White section with watermark -->
+<section class="watermark-section watermark-right" style="background:#ffffff; padding:60px 0 80px;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="table-container" style="padding:32px;">
+                    <h5 class="table-title" style="padding:0 0 20px 0; border-bottom:1px solid rgba(30,92,53,0.1); margin-bottom:24px;">Enter Crop Details</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Select Your Crop</label>
+                            <select name="crop" class="form-control" required>
+                                <option value="">Select crop</option>
+                                {% for crop in crops_available %}
+                                <option value="{{ crop }}" {% if result and result.crop.lower() == crop %}selected{% endif %}>{{ crop.title() }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Quantity Available (kg)</label>
+                            <input type="number" name="quantity" class="form-control" placeholder="e.g. 500" min="1" required value="{{ result.quantity|int if result else '' }}">
+                        </div>
+                        <button type="submit" class="btn-form">📊 Analyze Best Selling Time</button>
+                    </form>
+                    {% if not result %}
+                    <div style="text-align:center; margin-top:32px; padding-top:24px; border-top:1px solid rgba(30,92,53,0.08);">
+                        <div style="font-size:2.5rem; margin-bottom:12px;">📈</div>
+                        <p style="font-size:0.85rem; color:#6b8f76; line-height:1.7; margin:0;">Select your crop and quantity to see the best month to sell for maximum profit</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                {% if result %}
+                {% if result.extra_earning > 0 %}
+                <div style="background:linear-gradient(135deg, #e07b3f, #f5a666); border-radius:20px; padding:28px; color:white; margin-bottom:20px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:-20px; right:-20px; width:120px; height:120px; background:rgba(255,255,255,0.08); border-radius:50%;"></div>
+                    <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; opacity:0.75; margin-bottom:10px; font-weight:700;">Best Recommendation</div>
+                    <h4 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:8px; font-weight:800;">Wait until {{ result.best_upcoming }} to sell</h4>
+                    <p style="opacity:0.85; margin:0; font-size:0.95rem;">You will earn <strong>Rs. {{ result.extra_earning }}</strong> extra on {{ result.quantity|int }}kg by waiting</p>
+                </div>
+                {% else %}
+                <div style="background:linear-gradient(135deg, #1e5c35, #2d7a4f); border-radius:20px; padding:28px; color:white; margin-bottom:20px;">
+                    <div style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; opacity:0.75; margin-bottom:10px; font-weight:700;">Best Recommendation</div>
+                    <h4 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:8px; font-weight:800;">Sell Now — This is a Good Month!</h4>
+                    <p style="opacity:0.85; margin:0;">Current prices are strong for {{ result.crop }}</p>
+                </div>
+                {% endif %}
+
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div style="background:white; border-radius:16px; padding:20px; text-align:center; box-shadow:0 4px 16px rgba(10,31,18,0.08); border-top:4px solid #ef9a9a;">
+                            <div style="font-size:0.68rem; color:#6b8f76; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; font-weight:700;">Sell Now</div>
+                            <div style="font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:800; color:#c62828;">Rs.{{ result.current_price }}</div>
+                            <div style="font-size:0.7rem; color:#a8c4b0; margin-top:4px;">{{ result.current_month }}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="background:white; border-radius:16px; padding:20px; text-align:center; box-shadow:0 4px 16px rgba(10,31,18,0.08); border-top:4px solid #4aad6f;">
+                            <div style="font-size:0.68rem; color:#6b8f76; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; font-weight:700;">Best Time</div>
+                            <div style="font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:800; color:#1e5c35;">Rs.{{ result.best_price }}</div>
+                            <div style="font-size:0.7rem; color:#a8c4b0; margin-top:4px;">{{ result.best_month }}</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="background:white; border-radius:16px; padding:20px; text-align:center; box-shadow:0 4px 16px rgba(10,31,18,0.08); border-top:4px solid #f5a666;">
+                            <div style="font-size:0.68rem; color:#6b8f76; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; font-weight:700;">Extra Profit</div>
+                            <div style="font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:800; color:#e07b3f;">Rs.{{ result.extra_earning }}</div>
+                            <div style="font-size:0.7rem; color:#a8c4b0; margin-top:4px;">if you wait</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <h5 class="table-title">12 Month Price Trend — {{ result.crop }}</h5>
+                    <div style="padding:20px;"><canvas id="trendChart" height="200"></canvas></div>
+                </div>
+
+                {% else %}
+                <div style="background:#f9f6f0; border-radius:20px; padding:60px 40px; text-align:center; border:2px dashed rgba(30,92,53,0.12);">
+                    <div style="font-size:3.5rem; margin-bottom:16px;">📊</div>
+                    <h5 style="font-family:'Playfair Display',serif; color:#0a1f12; margin-bottom:10px;">Smart Selling Intelligence</h5>
+                    <p style="color:#6b8f76; font-size:0.9rem; max-width:280px; margin:0 auto; line-height:1.7;">Select your crop and quantity to see the best month to sell for maximum profit</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+{% if result %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+var trendData = [
+    {% for item in result.trend_data %}
+    { month: "{{ item.month[:3] }}", price: {{ item.price }} }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+var prices = trendData.map(function(d){ return d.price; });
+var maxPrice = Math.max.apply(null, prices);
+var ctx = document.getElementById('trendChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: trendData.map(function(d){ return d.month; }),
+        datasets: [{
+            label: 'Price (Rs/kg)', data: prices,
+            borderColor: '#2d7a4f', backgroundColor: 'rgba(45,122,79,0.07)',
+            borderWidth: 3,
+            pointBackgroundColor: prices.map(function(p){ return p===maxPrice?'#e07b3f':'#2d7a4f'; }),
+            pointRadius: prices.map(function(p){ return p===maxPrice?10:4; }),
+            pointBorderColor: prices.map(function(p){ return p===maxPrice?'#fff':'#2d7a4f'; }),
+            pointBorderWidth: prices.map(function(p){ return p===maxPrice?2:0; }),
+            tension: 0.4, fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor:'#0a1f12', titleColor:'rgba(255,255,255,0.6)', bodyColor:'#fff', padding:12, cornerRadius:8, callbacks:{ label:function(c){ return 'Rs. '+c.parsed.y+'/kg'; } } }
+        },
+        scales: {
+            y: { beginAtZero:false, grid:{ color:'rgba(30,92,53,0.06)' }, ticks:{ callback:function(v){ return 'Rs.'+v; }, color:'#6b8f76', font:{size:11} } },
+            x: { grid:{ display:false }, ticks:{ color:'#6b8f76', font:{size:11} } }
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

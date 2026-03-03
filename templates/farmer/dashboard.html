@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% block title %}Farmer Dashboard — AgroConnect{% endblock %}
+{% block content %}
+
+<div class="dashboard-header">
+    <div class="container">
+        <h2 class="dashboard-greeting">Good day, {{ session.user_name }}</h2>
+        <p class="dashboard-subtitle">Here is your farm performance overview</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top:20px;">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-label-card">Total Earnings</div>
+<div class="stat-value">Rs. {{ total_earnings or 0 }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card amber">
+                <div class="stat-label-card">Active Listings</div>
+                <div class="stat-value">{{ listings|length }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card dark">
+                <div class="stat-label-card">Total Orders</div>
+                <div class="stat-value">{{ orders|length }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 mb-3 d-flex justify-content-between align-items-center">
+            <h4 style="color:var(--green-dark); font-family:'Playfair Display',serif;">My Crop Listings</h4>
+            <a href="/farmer/add-listing" class="btn-primary-custom" style="padding:10px 24px; font-size:0.9rem;">
+                Add New Crop
+            </a>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <h5 class="table-title">Active Listings</h5>
+        {% if listings %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Crop</th>
+                        <th>Category</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Listed On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in listings %}
+                    <tr>
+                        <td><strong>{{ item.crop_name }}</strong></td>
+                        <td>{{ item.category or '—' }}</td>
+                        <td>{{ item.quantity }} {{ item.unit }}</td>
+                        <td>Rs. {{ item.price }}</td>
+                        <td><span class="status-badge status-{{ item.status }}">{{ item.status }}</span></td>
+                        <td style="font-size:0.82rem; color:var(--text-light);">{{ item.created_at.strftime('%d %b %Y') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-leaf fa-3x mb-3" style="color:var(--green-light);"></i>
+            <p style="color:var(--text-light);">No listings yet. Add your first crop to start selling.</p>
+            <a href="/farmer/add-listing" class="btn-form mt-2 d-inline-block" style="width:auto; padding:10px 30px;">Add Your First Crop</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="table-container mt-4">
+        <h5 class="table-title">Incoming Orders</h5>
+        {% if orders %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Crop</th>
+                        <th>Buyer</th>
+                        <th>Qty</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td style="font-size:0.82rem; color:var(--text-light);">#{{ order.order_id }}</td>
+                        <td><strong>{{ order.crop_name }}</strong></td>
+                        <td>{{ order.buyer_name }}</td>
+                        <td>{{ order.quantity }}</td>
+                        <td>Rs. {{ order.total_price }}</td>
+                        <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                        <td>
+                            {% if order.status == 'pending' %}
+                                <a href="/farmer/update-order/{{ order.order_id }}/confirmed" style="font-size:0.82rem; color:var(--green-mid); font-weight:600;">Confirm</a>
+                            {% elif order.status == 'confirmed' %}
+                                <a href="/farmer/update-order/{{ order.order_id }}/dispatched" style="font-size:0.82rem; color:#6a1b9a; font-weight:600;">Dispatch</a>
+                            {% elif order.status == 'dispatched' %}
+                                <a href="/farmer/update-order/{{ order.order_id }}/delivered" style="font-size:0.82rem; color:var(--green-mid); font-weight:600;">Mark Delivered</a>
+                            {% else %}
+                                <span style="color:var(--text-light); font-size:0.82rem;">Complete</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <p style="color:var(--text-light);">No orders received yet.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mt-4 mb-5">
+        <a href="/price-predictor" class="btn-primary-custom me-3" style="padding:12px 28px;">
+            Check Crop Price Prediction
+        </a>
+    </div>
+</div>
+<!-- MIDDLEMAN ELIMINATOR CARD -->
+<div class="col-12 mt-4">
+    <div style="background:linear-gradient(135deg, #1a3c2e, #2d6a4f); border-radius:16px; padding:28px; color:white;">
+        <div style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px; opacity:0.7; margin-bottom:16px;">
+            Middleman Elimination Calculator
+        </div>
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="row text-center g-3">
+                    <div class="col-4">
+                        <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:16px;">
+                            <div style="font-size:0.75rem; opacity:0.7; margin-bottom:6px;">MANDI PRICE</div>
+                            <div style="font-size:2rem; font-weight:700; color:#ef9a9a;">Rs.8</div>
+                            <div style="font-size:0.75rem; opacity:0.6;">per kg</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="background:rgba(82,183,136,0.3); border-radius:12px; padding:16px; border:2px solid var(--green-light);">
+                            <div style="font-size:0.75rem; opacity:0.7; margin-bottom:6px;">AGROCONNECT</div>
+                            <div style="font-size:2rem; font-weight:700; color:#a5d6a7;">Rs.28</div>
+                            <div style="font-size:0.75rem; opacity:0.6;">per kg</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div style="background:rgba(244,162,97,0.2); border-radius:12px; padding:16px;">
+                            <div style="font-size:0.75rem; opacity:0.7; margin-bottom:6px;">YOU SAVE</div>
+                            <div style="font-size:2rem; font-weight:700; color:#ffcc80;">Rs.20</div>
+                            <div style="font-size:0.75rem; opacity:0.6;">per kg</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-center mt-3 mt-md-0">
+                <div style="font-size:3rem; font-weight:700; color:#ffcc80;">250%</div>
+                <div style="font-size:0.9rem; opacity:0.8;">More income on AgroConnect</div>
+                <div style="font-size:0.75rem; opacity:0.5; margin-top:4px;">vs traditional mandi system</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

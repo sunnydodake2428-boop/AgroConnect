@@ -1,7 +1,35 @@
 {% extends 'base.html' %}
 {% block title %}Add Crop Listing — AgroConnect{% endblock %}
 {% block content %}
+<!-- HEADINGS -->
+<h2 data-en="Fresh Crop Marketplace"
+    data-mr="ताज्या पिकांची बाजारपेठ"
+    data-hi="ताज़ी फसल बाज़ार">Fresh Crop Marketplace</h2>
 
+<!-- BUTTONS -->
+<button data-en="Add to Cart"
+        data-mr="कार्टमध्ये जोडा"
+        data-hi="कार्ट में जोड़ें">Add to Cart</button>
+
+<!-- FORM LABELS -->
+<label data-en="Crop Name"
+       data-mr="पिकाचे नाव"
+       data-hi="फसल का नाम">Crop Name</label>
+
+<!-- INPUT PLACEHOLDERS -->
+<input type="text"
+       data-en="e.g. 100"
+       data-mr="उदा. 100"
+       data-hi="जैसे 100"
+       placeholder="e.g. 100">
+
+<!-- NAVIGATION LINKS -->
+<a href="/" data-en="Home" data-mr="मुखपृष्ठ" data-hi="होम">Home</a>
+<a href="/marketplace" data-en="Marketplace" data-mr="बाजारपेठ" data-hi="बाज़ार">Marketplace</a>
+<a href="/farmer/add-listing" data-en="Add Crop" data-mr="पीक जोडा" data-hi="फसल जोड़ें">Add Crop</a>
+<a href="/price-predictor" data-en="Price Predictor" data-mr="किंमत अंदाज" data-hi="मूल्य अनुमान">Price Predictor</a>
+<a href="/best-time-to-sell" data-en="Best Time to Sell" data-mr="विक्रीची योग्य वेळ" data-hi="बेचने का सही समय">Best Time to Sell</a>
+<a href="/logout" data-en="Logout" data-mr="लॉग आउट" data-hi="लॉग आउट">Logout</a>
 <div class="container">
     <div class="form-container" style="max-width:560px;">
         <h2 class="form-title">List a New Crop</h2>

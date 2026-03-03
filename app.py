@@ -33,3 +33,9 @@ app = create_app()
 
 if __name__ == '__main__':
     app.run(debug=True)
+    # Add this route to app.py
+
+@app.route('/language-select')
+def language_select():
+    """Show language selection splash page."""
+    return render_template('lang_splash.html')

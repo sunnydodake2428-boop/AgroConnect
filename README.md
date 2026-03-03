@@ -418,7 +418,7 @@ A: Phase 1: Sangli district pilot (100 farmers). Phase 2: Maharashtra — SQLite
 **Q: Who are your competitors and how are you different?**  
 A: DeHaat, AgroStar, Ninjacart charge 5–15% commission. We charge ₹0. Competitors have no AI tools built for low-literacy farmers. None support Marathi voice search. None address Maharashtra's flower economy. We built specifically for the farmer who can't type English.
 
----
+--- 
 
 *Built with ❤️ for the farmers of India 🌾*
 
